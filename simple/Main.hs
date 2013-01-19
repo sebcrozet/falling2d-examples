@@ -16,6 +16,7 @@ import Physics.Falling.RigidBody.Dynamic
 import Physics.Falling.RigidBody.StaticBody
 import Physics.Falling.Math.Transform
 import Physics.Falling.Shape.Ball
+import Physics.Falling.Shape.Plane
 import Physics.Falling.Collision.Graph.CollisionGraph
 import Physics.Falling2d.World2d
 import Physics.Falling2d.Shape2d
@@ -42,14 +43,20 @@ main = simulate
 	     advanceWorld	      -- a function to advance the world to
 	     		                --    the next simulation step.
 
-worldInit = addRigidBodies bodies $ mkWorld2d
+worldInit = addRigidBodies (bodies ++ ground) $ mkWorld2d
             where
-            bodies = map generateDynamicBody [1 .. 100]
+            bodies = map generateDynamicBody [1 .. 50]
+            ground = [
+                       orderRigidBody (-1) $ StaticBody $ RB.translate (Vec2 0 (-10))
+                                                        $ mkStaticBody idmtx (Plane2d $ Plane $ Vec2 (-1) 2)
+                       , orderRigidBody (-2) $ StaticBody $ RB.translate (Vec2 0 (-10))
+                                                          $ mkStaticBody idmtx (Plane2d $ Plane $ Vec2 1 2)
+                     ]
 
 generateDynamicBody i = orderRigidBody i $ DynamicBody
-                                         $ RB.translate (Vec2 fdx fdy)
+                                         $ RB.translate (Vec2 fdx $ fdy + 10)
                                          $ setExternalLinearForce (Vec2 0.0 (-9.81))
-                                         $ mkDynamicBody idmtx (Ball2d $ Ball 0.5) 1.0 (Vec2 0.0 0.0) (Vec1 0.0)
+                                         $ mkDynamicBody idmtx (Ball2d $ Ball 1.0) 1.0 (Vec2 0.0 0.0) (Vec1 0.0)
                         where
                         g = mkStdGen (i * 20)
                         (_, g')   = next g
@@ -63,7 +70,7 @@ generateDynamicBody i = orderRigidBody i $ DynamicBody
 advanceWorld viewport time world = step 0.016 world
 
 drawWorld :: DefaultWorld2d Int -> Picture
-drawWorld world = Pictures $ map drawBody $ activeBodies world
+drawWorld world = Pictures $ map drawBody $ rigidBodies world
 
 -- | Draw an actor as a picture.
 drawBody :: OrderedRigidBody2d Int -> Picture 
@@ -75,10 +82,15 @@ drawBody body
                      Translate (double2Float posX * drawScale) (double2Float posY * drawScale) $ drawStaticShape $ getCollisionVolume sb
 
 drawDynamicShape :: DynamicShape2d -> Picture
-drawDynamicShape (Ball2d (Ball radius)) = Color violet $ circleFilled (double2Float radius * drawScale) 10
+drawDynamicShape (Ball2d (Ball radius)) = Color green $ circleContour (double2Float radius * drawScale) 10
 
 drawStaticShape  :: StaticShape2d -> Picture
 drawStaticShape (StaticBall2d (Ball radius)) = Color (greyN 0.8) $ circleFilled (double2Float radius * drawScale) 10
+drawStaticShape (Plane2d      (Plane (Vec2 nx ny))) = Color (greyN 0.8) $ Line [(-fny * 100.0, fnx * 100.0),
+                                                                                (fny * 100.0, -fnx * 100.0)]
+                                                      where
+                                                      fnx = double2Float nx
+                                                      fny = double2Float ny
 
 -- A list of n points spaced equally around the unit circle.
 circlePoints :: Float -> [(Float, Float)]
@@ -91,3 +103,8 @@ circleFilled :: Float -> Float -> Picture
 circleFilled r n
  	= Scale r r
 	$ Polygon (circlePoints n)
+
+circleContour :: Float -> Float -> Picture
+circleContour r n
+ 	= Scale r r
+	$ Line (circlePoints n)
