@@ -10,6 +10,7 @@ import Physics.Falling.RigidBody.StaticBody
 import qualified Physics.Falling.RigidBody.Positionable as RB (translate)
 import Physics.Falling.Shape.Ball
 import Physics.Falling.Shape.Plane
+import Physics.Falling2d.Rectangle
 import Physics.Falling2d.World2d
 import Physics.Falling2d.Shape2d
 import Physics.Falling2d.Vec1
@@ -21,21 +22,23 @@ main :: IO ()
 main = runSimulate worldInit
 
 worldInit :: DefaultWorld2d Int
-worldInit = addRigidBodies (bodies ++ ground) $ mkWorld2d
+worldInit = addRigidBodies (balls ++ rects ++ ground) $ mkWorld2d
             where
-            bodies = map generateDynamicBody [1 .. 50]
+            balls  = [] -- map (generateDynamicBody (Ball2d $ Ball 1.0)) [1 .. 50]
+            rects  = map (generateDynamicBody (Rectangle2d $ Rectangle 1.0 1.0)) [16 .. 36]
             ground = [
-                       orderRigidBody (-1) $ StaticBody $ RB.translate (Vec2 0 (-10))
-                                                        $ mkStaticBody idmtx (Plane2d $ Plane $ Vec2 (-1) 2)
-                       , orderRigidBody (-2) $ StaticBody $ RB.translate (Vec2 0 (-10))
-                                                          $ mkStaticBody idmtx (Plane2d $ Plane $ Vec2 1 2)
+                      orderRigidBody (-1) $ StaticBody $ RB.translate (Vec2 0 (-5))
+                                                       $ mkStaticBody idmtx (Plane2d $ Plane $ Vec2 (1) 3)
+                      , orderRigidBody (-2) $ StaticBody $ RB.translate (Vec2 0 (-5))
+                                                         $ mkStaticBody idmtx (Plane2d $ Plane $ Vec2 (-1) 3)
                      ]
 
-generateDynamicBody :: Int -> OrderedRigidBody2d Int
-generateDynamicBody i = orderRigidBody i $ DynamicBody
-                                         $ RB.translate (Vec2 fdx $ fdy + 10)
-                                         $ setExternalLinearForce (Vec2 0.0 (-9.81))
-                                         $ mkDynamicBody idmtx (Ball2d $ Ball 1.0) 1.0 (Vec2 0.0 0.0) (Vec1 0.0)
+generateDynamicBody :: DynamicShape2d -> Int -> OrderedRigidBody2d Int
+generateDynamicBody s i = orderRigidBody i $ DynamicBody
+                                           $ RB.translate (Vec2 fdx $ fdy + 10)
+                                           $ setExternalLinearForce (Vec2 0.0 (-9.81))
+                                           -- $ setExternalAngularForce (Vec1 (-pi))
+                                           $ mkDynamicBody idmtx s 1.0 (Vec2 0.0 0.0) (Vec1 0.0)
                         where
                         g = mkStdGen (i * 20)
                         (_, g')   = next g

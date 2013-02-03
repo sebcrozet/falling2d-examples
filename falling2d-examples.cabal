@@ -2,7 +2,7 @@ Name:            falling2d-examples
 Version:         0.0.0.0
 Description:     2d physics engine
 License:         BSD3
-Author:          Sébastien Crozt
+Author:          Sébastien Crozet
 Maintainer:      developer@crozet.re
 Build-Type:      Simple
 Cabal-Version:   >=1.2
@@ -11,4 +11,5 @@ Executable falling2d-simple
   Build-Depends:   base, vect, falling, falling2d, gloss, random, normaldistribution
   hs-source-dirs:  simple
   Main-is:         Main.hs
-  ghc-options:     -Wall -O2 -threaded -prof -rtsopts -with-rtsopts=-p -auto-all -caf-all
+  ghc-options:     -Wall -O2 
+  -- -threaded -prof -rtsopts -with-rtsopts=-p -auto-all -caf-all
