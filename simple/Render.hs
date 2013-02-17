@@ -54,33 +54,34 @@ drawBody :: OrderedRigidBody2d Int -> Picture
 drawBody body
  = case rigidBody body of
    DynamicBody db -> let (Vec2 posX posY) = translation l2w in
-                     -- trace (show (getAngularVelocity db) ++ " − " ++ show (getLinearVelocity db)) $
+                     -- trace (show (angularVelocity db) ++ " − " ++ show (linearVelocity db)) $
                      Translate (double2Float posX * drawScale) (double2Float posY * drawScale)
                      $ Rotate ((double2Float $ rotationFromMatrix l2w) * 180.0 / pi)
                      $ drawDynamicShape
-                     $ getCollisionVolume db
+                     $ collisionVolume db
                      where
-                     l2w = getLocalToWorld db
-   StaticBody sb -> let (Vec2 posX posY) = translation $ getLocalToWorld sb in
+                     l2w = localToWorld db
+   StaticBody sb -> let (Vec2 posX posY) = translation $ localToWorld sb in
                      Translate (double2Float posX * drawScale) (double2Float posY * drawScale)
                      $ drawStaticShape
-                     $ getCollisionVolume sb
+                     $ collisionVolume sb
 
 drawDynamicShape :: DynamicShape2d -> Picture
-drawDynamicShape (Ball2d (Ball radius)) = Color green $ circleContour (double2Float radius * drawScale) 10
+drawDynamicShape (Ball2d (Ball _ radius)) = Color green $ circleContour (double2Float radius * drawScale) 10           -- FIXME: take the ball center in account
 drawDynamicShape (Rectangle2d (Rectangle rx ry)) = Color red $ rectangleContour (double2Float rx * drawScale)
                                                                                 (double2Float ry * drawScale)
 
 drawStaticShape  :: StaticShape2d -> Picture
-drawStaticShape (StaticBall2d (Ball radius)) = Color (greyN 0.8) $ circleFilled (double2Float radius * drawScale) 10
+drawStaticShape (StaticBall2d (Ball _ radius)) = Color (greyN 0.8) $ circleFilled (double2Float radius * drawScale) 10 -- FIXME: take the ball center in account
 drawStaticShape (StaticRectangle2d (Rectangle rx ry)) = Color (greyN 0.8) $ rectangleContour
                                                                             (double2Float rx * drawScale)
                                                                             (double2Float ry * drawScale)
-drawStaticShape (Plane2d      (Plane (Vec2 nx ny))) = Color (greyN 0.8) $ Line [(-fny * 100.0, fnx * 100.0),
+drawStaticShape (Plane2d    (Plane _ n)) = Color (greyN 0.8) $ Line [(-fny * 100.0, fnx * 100.0),           -- FIXME: take the plane center in account
                                                                                 (fny * 100.0, -fnx * 100.0)]
                                                       where
-                                                      fnx = double2Float nx
-                                                      fny = double2Float ny
+                                                      Vec2 nx ny = fromNormal n
+                                                      fnx        = double2Float nx
+                                                      fny        = double2Float ny
 
 -- drawPoint :: Normal2 -> Picture
 -- drawPoint n = let Vec2 x y = fromNormal n in
