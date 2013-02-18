@@ -24,13 +24,13 @@ main = runSimulate worldInit
 worldInit :: DefaultWorld2d Int
 worldInit = addRigidBodies (balls ++ rects ++ ground) $ mkWorld2d
             where
-            balls  = [] -- map (generateDynamicBody (Ball2d $ Ball 1.0)) [1 .. 50]
-            rects  = map (generateDynamicBody (Rectangle2d $ Rectangle 1.0 1.0)) [16 .. 36]
+            balls  = [] -- map (generateDynamicBody (Ball2d $ ball 1.0)) [1 .. 40]
+            rects  = map (generateDynamicBody (Rectangle2d $ Rectangle 1.0 1.0)) [10 .. 35] -- 6 .. 26]
             ground = [
                       orderRigidBody (-1) $ StaticBody $ RB.translate (Vec2 0 (-5))
-                                                       $ mkStaticBody idmtx (Plane2d $ Plane $ Vec2 (1) 3)
+                                                       $ mkStaticBody idmtx (Plane2d $ planev $ Vec2 (1) 1)
                       , orderRigidBody (-2) $ StaticBody $ RB.translate (Vec2 0 (-5))
-                                                         $ mkStaticBody idmtx (Plane2d $ Plane $ Vec2 (-1) 3)
+                                                         $ mkStaticBody idmtx (Plane2d $ planev $ Vec2 (-1) 1)
                      ]
 
 generateDynamicBody :: DynamicShape2d -> Int -> OrderedRigidBody2d Int
